@@ -90,7 +90,6 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-
 export const studentLogin = login;
 export const adminLogin = login;
 
