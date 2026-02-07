@@ -2,12 +2,14 @@ import axios from "axios";
 
 const GATEWAY_URL = process.env.GATEWAY_URL || "http://localhost:3000/api/v1";
 // Sanitize MAIL_SERVICE_URL to remove trailing '/health' if present
-const rawMailUrl = process.env.MAIL_SERVICE_URL || `${GATEWAY_URL}/mail`;
+const rawMailUrl = (
+  process.env.MAIL_SERVICE_URL || `${GATEWAY_URL}/mail`
+).trim();
 const MAIL_SERVICE_URL = rawMailUrl.endsWith("/health")
   ? rawMailUrl.slice(0, -7)
   : rawMailUrl;
 
-const SECRET = process.env.INTERNAL_SECRET;
+const SECRET = (process.env.INTERNAL_SECRET || "").trim();
 if (!SECRET && process.env.NODE_ENV === "production") {
   throw new Error("INTERNAL_SECRET is required in production");
 }

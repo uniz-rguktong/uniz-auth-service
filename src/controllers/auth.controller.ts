@@ -149,13 +149,14 @@ export const requestOtp = async (req: Request, res: Response) => {
     // Try to get email from user service first
     let email = `${username.toLowerCase()}@rguktong.ac.in`;
     try {
-      const rawUserUrl =
-        process.env.USER_SERVICE_URL || "http://localhost:3002";
+      const rawUserUrl = (
+        process.env.USER_SERVICE_URL || "http://localhost:3002"
+      ).trim();
       const USER_SERVICE = rawUserUrl.endsWith("/health")
         ? rawUserUrl.slice(0, -7)
         : rawUserUrl;
 
-      const SECRET = process.env.INTERNAL_SECRET || "uniz-core";
+      const SECRET = (process.env.INTERNAL_SECRET || "uniz-core").trim();
       const userRes = await axios.get(
         `${USER_SERVICE}/admin/student/${username}`,
         {
