@@ -5,7 +5,7 @@ const SECRET = process.env.JWT_SECURITY_KEY;
 if (!SECRET && process.env.NODE_ENV === "production") {
   throw new Error("JWT_SECURITY_KEY is required in production");
 }
-const JWT_SECRET: string = SECRET || "default_secret_unsafe";
+const JWT_SECRET: string = (SECRET || "default_secret_unsafe").trim();
 
 export const signToken = (payload: JwtPayload): string => {
   if (payload.exp) {
