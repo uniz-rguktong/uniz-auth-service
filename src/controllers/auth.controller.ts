@@ -149,8 +149,12 @@ export const requestOtp = async (req: Request, res: Response) => {
     // Try to get email from user service first
     let email = `${username.toLowerCase()}@rguktong.ac.in`;
     try {
-      const USER_SERVICE =
+      const rawUserUrl =
         process.env.USER_SERVICE_URL || "http://localhost:3002";
+      const USER_SERVICE = rawUserUrl.endsWith("/health")
+        ? rawUserUrl.slice(0, -7)
+        : rawUserUrl;
+
       const SECRET = process.env.INTERNAL_SECRET || "uniz-core";
       const userRes = await axios.get(
         `${USER_SERVICE}/admin/student/${username}`,
