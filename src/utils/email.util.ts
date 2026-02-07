@@ -1,12 +1,12 @@
 import axios from "axios";
 
-const GATEWAY_URL =
-  process.env.GATEWAY_URL ||
-  (process.env.NODE_ENV === "production"
-    ? "https://uniz-gateway.vercel.app/api/v1"
-    : "http://localhost:3000/api/v1");
+const GATEWAY_URL = process.env.GATEWAY_URL || "http://localhost:3000/api/v1";
 const MAIL_SERVICE_URL = process.env.MAIL_SERVICE_URL || `${GATEWAY_URL}/mail`;
-const INTERNAL_SECRET = process.env.INTERNAL_SECRET || "uniz-core";
+const SECRET = process.env.INTERNAL_SECRET;
+if (!SECRET && process.env.NODE_ENV === "production") {
+  throw new Error("INTERNAL_SECRET is required in production");
+}
+const INTERNAL_SECRET = SECRET || "uniz-core";
 
 export const sendOtpEmail = async (
   email: string,
