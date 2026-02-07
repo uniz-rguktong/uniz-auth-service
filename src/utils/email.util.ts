@@ -2,7 +2,9 @@ import axios from "axios";
 
 const GATEWAY_URL =
   process.env.GATEWAY_URL ||
-  "https://uniz-gateway.vercel.app/api/v1";
+  (process.env.NODE_ENV === "production"
+    ? "https://uniz-gateway.vercel.app/api/v1"
+    : "http://localhost:3000/api/v1");
 const MAIL_SERVICE_URL = process.env.MAIL_SERVICE_URL || `${GATEWAY_URL}/mail`;
 const INTERNAL_SECRET = process.env.INTERNAL_SECRET || "uniz-core";
 
