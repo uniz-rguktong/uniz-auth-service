@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import axios from "axios";
 import { PrismaClient } from "../generated/client";
 import { signToken, verifyToken } from "../utils/token.util";
+import { redis } from "../utils/redis.util";
 import {
   sendOtpEmail,
   sendLoginNotification,
@@ -224,6 +225,7 @@ export const verifyOtp = async (req: Request, res: Response) => {
     const resetToken = signToken({
       username: validOtp.username,
       role: "system_reset_intent",
+      jti: validOtp.id,
       exp: Math.floor(Date.now() / 1000) + 5 * 60, // 5 minutes validity
     });
 
@@ -267,6 +269,18 @@ export const resetPassword = async (req: Request, res: Response) => {
     });
   }
 
+  // Check if token was already used (Redis Blacklist)
+  const jti = decoded.jti;
+  if (jti) {
+    const isUsed = await redis.get(`blacklist:reset:${jti}`);
+    if (isUsed) {
+      return res.status(403).json({
+        code: "AUTH_FORBIDDEN",
+        message: "Reset token has already been used.",
+      });
+    }
+  }
+
   try {
     // Fetch canonical user to ensure update works with correct casing
     const targetUser = await prisma.authCredential.findFirst({
@@ -286,6 +300,15 @@ export const resetPassword = async (req: Request, res: Response) => {
       where: { id: targetUser.id },
       data: { passwordHash: hashedPassword },
     });
+
+    // Mark token as used in Redis
+    if (jti) {
+      const now = Math.floor(Date.now() / 1000);
+      const ttl = (decoded.exp || now + 300) - now;
+      if (ttl > 0) {
+        await redis.setex(`blacklist:reset:${jti}`, ttl, "true");
+      }
+    }
 
     // Send password change notification email (non-blocking)
     const email = `${targetUser.username}@rguktong.ac.in`;
